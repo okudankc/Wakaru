@@ -157,8 +157,8 @@ class AppState:
     def __init__(self):
         self.config = load_config()
         self.connected = {}        # id(ws) -> student_info dict
-        self.cant_keep_up = set()  # student_id
-        self.cant_start = {}       # student_id -> datetime
+        self.cant_keep_up = set()  # id(ws)  接続単位で管理（同一学籍番号の複数接続を独立して扱う）
+        self.cant_start = {}       # id(ws) -> datetime
         self.lock = threading.Lock()
         self.gui_queue = queue.Queue()
 
@@ -209,36 +209,36 @@ async def ws_handler(websocket, path=None):
                 state.gui_queue.put(('update',))
 
             elif t == 'cant_keep_up':
-                if sid:
+                if sid:  # 登録済みのみ受け付ける
+                    ws_id = id(websocket)
                     with state.lock:
-                        state.cant_keep_up.add(sid)
-                        state.cant_start[sid] = datetime.now()
+                        state.cant_keep_up.add(ws_id)
+                        state.cant_start[ws_id] = datetime.now()
                     state.gui_queue.put(('update',))
 
             elif t == 'recovered':
                 if sid:
-                    _flush_log(sid, websocket)
+                    _flush_log(websocket)
                     with state.lock:
-                        state.cant_keep_up.discard(sid)
+                        state.cant_keep_up.discard(id(websocket))
                     state.gui_queue.put(('update',))
 
     except websockets.exceptions.ConnectionClosed:
         pass
     finally:
-        if sid:
-            _flush_log(sid, websocket)
+        _flush_log(websocket)
         with state.lock:
             state.connected.pop(id(websocket), None)
-            if sid:
-                state.cant_keep_up.discard(sid)
+            state.cant_keep_up.discard(id(websocket))
         state.gui_queue.put(('update',))
 
 
-def _flush_log(sid, websocket):
+def _flush_log(websocket):
     """未記録の cant_keep_up イベントをログに書き出す。"""
+    ws_id = id(websocket)
     with state.lock:
-        start = state.cant_start.pop(sid, None)
-        info = state.connected.get(id(websocket), {})
+        start = state.cant_start.pop(ws_id, None)
+        info = state.connected.get(ws_id, {})
     if start:
         threading.Thread(
             target=write_log, args=(info, start, datetime.now()), daemon=True
@@ -412,8 +412,7 @@ class TeacherGUI:
             cant = set(state.cant_keep_up)
 
         for ws_id, info in connected.items():
-            sid = info.get('_sid', '')
-            if sid not in cant:
+            if ws_id not in cant:
                 continue
             sx = info.get('seat_x', -1)
             sy = info.get('seat_y', -1)
