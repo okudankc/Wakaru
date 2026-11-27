@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wakaru 管理ツール マニュアル（先生用）</title>
+<style>
+  :root {
+    --green: #27ae60;
+    --red: #e74c3c;
+    --blue: #2980b9;
+    --bg: #f8f9fa;
+    --border: #dee2e6;
+    --text: #212529;
+    --muted: #6c757d;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Yu Gothic UI', 'Meiryo', sans-serif; color: var(--text); background: #fff; font-size: 15px; line-height: 1.7; }
+  .cover { background: #1e1e1e; color: #fff; padding: 48px 40px; }
+  .cover h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .cover .sub { color: #aaa; font-size: 14px; }
+  .badge { display: inline-block; background: var(--green); color: #fff; padding: 2px 10px; border-radius: 4px; font-size: 12px; margin-left: 10px; vertical-align: middle; }
+  main { max-width: 800px; margin: 0 auto; padding: 32px 24px 64px; }
+  h2 { font-size: 20px; font-weight: 700; margin: 40px 0 12px; padding-left: 12px; border-left: 4px solid var(--green); }
+  h3 { font-size: 16px; font-weight: 700; margin: 24px 0 8px; color: #333; }
+  p { margin-bottom: 12px; }
+  ul, ol { padding-left: 20px; margin-bottom: 12px; }
+  li { margin-bottom: 6px; }
+  .step { counter-reset: step; }
+  .step li { list-style: none; counter-increment: step; padding-left: 36px; position: relative; margin-bottom: 10px; }
+  .step li::before { content: counter(step); position: absolute; left: 0; top: 1px; width: 24px; height: 24px; background: var(--blue); color: #fff; border-radius: 50%; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .card { border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; background: var(--bg); }
+  .card h3 { margin-top: 0; }
+  .status-green { background: var(--green); color: #fff; border-radius: 6px; padding: 10px 20px; display: inline-block; font-weight: 700; margin: 4px 0; }
+  .status-red { background: var(--red); color: #fff; border-radius: 6px; padding: 10px 20px; display: inline-block; font-weight: 700; margin: 4px 0; }
+  .note { background: #fff8e1; border-left: 4px solid #ffc107; padding: 10px 14px; border-radius: 0 6px 6px 0; margin-bottom: 12px; font-size: 14px; }
+  .warn { background: #fff3f3; border-left: 4px solid var(--red); padding: 10px 14px; border-radius: 0 6px 6px 0; margin-bottom: 12px; font-size: 14px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 14px; }
+  th { background: #343a40; color: #fff; padding: 8px 12px; text-align: left; }
+  td { border: 1px solid var(--border); padding: 8px 12px; }
+  tr:nth-child(even) td { background: var(--bg); }
+  .kbd { display: inline-block; background: #e9ecef; border: 1px solid #adb5bd; border-radius: 4px; padding: 1px 7px; font-family: monospace; font-size: 13px; }
+  .toc { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin-bottom: 32px; }
+  .toc h3 { margin-top: 0; margin-bottom: 10px; font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .toc ol { margin-bottom: 0; }
+  .toc a { color: var(--blue); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+  .screen { border: 2px solid #333; border-radius: 8px; background: #1e1e1e; padding: 16px; display: inline-block; margin: 12px 0; font-size: 14px; }
+  .screen .s-box { background: var(--green); color: #fff; padding: 12px 24px; border-radius: 6px; text-align: center; font-weight: 700; margin-bottom: 8px; }
+  .screen .s-info { color: #aaa; font-size: 12px; text-align: center; margin-bottom: 10px; }
+  .screen .s-btn { display: inline-block; background: #444; color: #fff; padding: 4px 12px; border-radius: 4px; font-size: 12px; margin-right: 6px; }
+  @media print {
+    .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .status-green, .status-red { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div style="max-width:800px;margin:0 auto;">
+    <div style="color:#aaa;font-size:13px;margin-bottom:12px;">Wakaru</div>
+    <h1>管理ツール マニュアル <span class="badge">先生用</span></h1>
+    <div class="sub">リアルタイム授業理解度モニタリングシステム</div>
+  </div>
+</div>
+
+<main>
+
+  <div class="toc">
+    <h3>目次</h3>
+    <ol>
+      <li><a href="#overview">システムの概要</a></li>
+      <li><a href="#start">初回起動・初期設定</a></li>
+      <li><a href="#screen">メイン画面の見かた</a></li>
+      <li><a href="#settings">設定（先生登録・閾値）</a></li>
+      <li><a href="#log">授業ログの確認</a></li>
+      <li><a href="#trouble">トラブルシューティング</a></li>
+    </ol>
+  </div>
+
+  <!-- 1 -->
+  <h2 id="overview">1. システムの概要</h2>
+  <p>Wakaru は、学生が「授業についていけない」と感じたときにリアルタイムで先生に知らせるシステムです。</p>
+  <table>
+    <tr><th>ツール</th><th>利用者</th><th>動作方法</th></tr>
+    <tr><td><strong>管理ツール（本書）</strong></td><td>先生</td><td>先生PCで起動。サーバーを兼ねる</td></tr>
+    <tr><td>学生ツール</td><td>学生</td><td>Teamsから入手してダブルクリック起動</td></tr>
+  </table>
+  <div class="note">
+    ⚠ 管理ツールと学生ツールは<strong>同じネットワーク（同一セグメント）</strong>内で使用してください。<br>
+    学生ツールは先生PCを自動で検索するため、IP アドレスの入力は不要です。
+  </div>
+
+  <!-- 2 -->
+  <h2 id="start">2. 初回起動・初期設定</h2>
+
+  <h3>起動方法</h3>
+  <ol class="step">
+    <li><strong>Wakaru_Teacher.exe</strong> をダブルクリックします。</li>
+    <li>初回のみ「ファイアウォール設定」ダイアログが表示されます。<br>
+        <strong>「はい」</strong>を選ぶと Windows の UAC 確認が表示されます。「はい」をクリックしてください。</li>
+    <li>管理ツールのメイン画面が開きます。</li>
+  </ol>
+
+  <div class="note">
+    ファイアウォール設定は初回のみです。2回目以降は自動的にスキップされます。
+  </div>
+
+  <h3>先生の登録（必須）</h3>
+  <ol class="step">
+    <li>「⚙ 設定」ボタンをクリックします。</li>
+    <li>「先生管理」タブで先生の名前を入力し、「追加」をクリックします。</li>
+    <li>授業を担当する先生を全員登録してください。学生がこのリストから選択します。</li>
+    <li>「保存して閉じる」をクリックします。</li>
+  </ol>
+
+  <!-- 3 -->
+  <h2 id="screen">3. メイン画面の見かた</h2>
+
+  <div style="text-align:center;">
+    <div class="screen">
+      <div class="s-box">● 授業中 - 全員理解中</div>
+      <div class="s-info">1・2限　　接続: 32人 / 未理解: 0人</div>
+      <div>
+        <span class="s-btn">⚙ 設定</span>
+        <span class="s-btn">📋 ログ</span>
+        <span style="color:#ccc;font-size:12px;">☑ 最前面に表示</span>
+      </div>
+    </div>
+  </div>
+
+  <table style="margin-top:16px;">
+    <tr><th>表示</th><th>意味</th></tr>
+    <tr>
+      <td><span class="status-green">● 授業中 - 全員理解中</span></td>
+      <td>理解できていない学生が閾値未満。正常状態。</td>
+    </tr>
+    <tr>
+      <td><span class="status-red">⚠ 警告! X/Y人が理解できていません</span>（点滅）</td>
+      <td>閾値を超えた。授業ペースの調整を検討してください。</td>
+    </tr>
+    <tr>
+      <td>時限表示（例: <strong>1・2限</strong>）</td>
+      <td>現在の時限を自動判定。授業時間外は「時間外」と表示。</td>
+    </tr>
+    <tr>
+      <td>接続: X人 / 未理解: Y人</td>
+      <td>現在の接続学生数と「ついていけない」通知をしている学生数。</td>
+    </tr>
+  </table>
+
+  <h3>最前面表示</h3>
+  <p>「最前面に表示」チェックをオンにすると、他のウィンドウの手前に常に表示されます。PowerPoint スライドショー中でも確認できます。</p>
+
+  <!-- 4 -->
+  <h2 id="settings">4. 設定</h2>
+
+  <h3>先生管理タブ</h3>
+  <div class="card">
+    <ul>
+      <li><strong>追加：</strong>テキストボックスに名前を入力して「追加」ボタンをクリック</li>
+      <li><strong>削除：</strong>リストから名前を選択して「削除」ボタンをクリック</li>
+      <li>登録された先生リストは学生ツールに自動配信されます</li>
+    </ul>
+  </div>
+
+  <h3>閾値設定タブ</h3>
+  <div class="card">
+    <table>
+      <tr><th>設定項目</th><th>説明</th><th>例</th></tr>
+      <tr>
+        <td>割合 (%)</td>
+        <td>接続学生に対する割合で判定</td>
+        <td>30 → 30人中9人以上で警告</td>
+      </tr>
+      <tr>
+        <td>人数</td>
+        <td>絶対人数で判定</td>
+        <td>5 → 5人以上で警告</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- 5 -->
+  <h2 id="log">5. 授業ログの確認</h2>
+
+  <p>「📋 ログ」ボタンをクリックするとログビューアが開きます。</p>
+
+  <h3>ログビューアの操作</h3>
+  <div class="card">
+    <ul>
+      <li>日付を入力して「読み込み」→ その日のログを一覧表示</li>
+      <li>画面下部に時限ごとの件数集計が表示されます</li>
+      <li>「フォルダを開く」→ ログファイルが保存されているフォルダを開く</li>
+    </ul>
+  </div>
+
+  <h3>ログファイルの場所と形式</h3>
+  <p>管理ツール（.exe）と同じフォルダ内の <strong>logs</strong> フォルダに日付ごとの CSV ファイルが保存されます。</p>
+  <div class="note">
+    例：<span class="kbd">logs\2026-11-18.csv</span><br>
+    Excel でそのまま開けます（文字コード: UTF-8 BOM付き）。
+  </div>
+
+  <table>
+    <tr><th>列名</th><th>内容</th></tr>
+    <tr><td>日付</td><td>YYYY-MM-DD 形式</td></tr>
+    <tr><td>時限</td><td>1・2限 / 3・4限 / 5・6限 / 7・8限 / 時間外</td></tr>
+    <tr><td>学籍番号</td><td>学生が入力した学籍番号</td></tr>
+    <tr><td>クラス名</td><td>学生が入力したクラス名</td></tr>
+    <tr><td>出席番号</td><td>学生が入力した出席番号</td></tr>
+    <tr><td>氏名</td><td>学生が入力した氏名</td></tr>
+    <tr><td>担当教師</td><td>学生が選択した先生名</td></tr>
+    <tr><td>開始時刻</td><td>「ついていけない」ボタンを押した時刻</td></tr>
+    <tr><td>解除時刻</td><td>自動解除または切断した時刻</td></tr>
+  </table>
+
+  <!-- 6 -->
+  <h2 id="trouble">6. トラブルシューティング</h2>
+
+  <div class="card">
+    <h3>学生が接続できない</h3>
+    <ul>
+      <li>管理ツールが起動しているか確認してください</li>
+      <li>先生PCと学生PCが<strong>同じネットワーク（同一セグメント）</strong>に接続されているか確認してください</li>
+      <li>ファイアウォール設定が完了しているか確認してください（初回起動時に「はい」を選んだか）</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>先生リストが学生ツールに表示されない</h3>
+    <ul>
+      <li>設定 → 先生管理 で先生が登録されているか確認してください</li>
+      <li>学生ツールを再起動してください（再接続で最新リストを取得します）</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>ファイアウォール設定ダイアログが再表示される</h3>
+    <ul>
+      <li>前回の設定が完了していない可能性があります</li>
+      <li>「はい」を選択し、UAC の確認で「はい」をクリックしてください</li>
+      <li>手動で設定する場合はコマンドプロンプト（管理者）で下記を実行してください：</li>
+    </ul>
+    <pre style="background:#f4f4f4;padding:10px;border-radius:4px;font-size:12px;overflow:auto;">netsh advfirewall firewall add rule name="Wakaru-WebSocket" dir=in action=allow protocol=TCP localport=8765
+netsh advfirewall firewall add rule name="Wakaru-UDP-Discovery" dir=in action=allow protocol=UDP localport=9999</pre>
+  </div>
+
+  <div class="card">
+    <h3>ログファイルが保存されない</h3>
+    <ul>
+      <li>学生が情報（学籍番号・氏名）を入力して「保存して接続」をしているか確認してください</li>
+      <li>「ついていけない」ボタンを押した後、解除されるまで（自動1分または切断）の間でログが確定します</li>
+    </ul>
+  </div>
+
+  <hr>
+  <p style="text-align:center;color:var(--muted);font-size:13px;">Wakaru 管理ツール マニュアル</p>
+
+</main>
+</body>
+</html>

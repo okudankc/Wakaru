@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wakaru 学生ツール マニュアル（学生用）</title>
+<style>
+  :root {
+    --orange: #e67e22;
+    --red: #e74c3c;
+    --blue: #2980b9;
+    --green: #27ae60;
+    --bg: #f8f9fa;
+    --border: #dee2e6;
+    --text: #212529;
+    --muted: #6c757d;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Yu Gothic UI', 'Meiryo', sans-serif; color: var(--text); background: #fff; font-size: 15px; line-height: 1.7; }
+  .cover { background: #1e3a5f; color: #fff; padding: 48px 40px; }
+  .cover h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .cover .sub { color: #9db8d2; font-size: 14px; }
+  .badge { display: inline-block; background: var(--blue); color: #fff; padding: 2px 10px; border-radius: 4px; font-size: 12px; margin-left: 10px; vertical-align: middle; }
+  main { max-width: 740px; margin: 0 auto; padding: 32px 24px 64px; }
+  h2 { font-size: 20px; font-weight: 700; margin: 40px 0 12px; padding-left: 12px; border-left: 4px solid var(--blue); }
+  h3 { font-size: 16px; font-weight: 700; margin: 24px 0 8px; color: #333; }
+  p { margin-bottom: 12px; }
+  ul, ol { padding-left: 20px; margin-bottom: 12px; }
+  li { margin-bottom: 6px; }
+  .step { counter-reset: step; padding-left: 0; }
+  .step li { list-style: none; counter-increment: step; padding-left: 40px; position: relative; margin-bottom: 14px; }
+  .step li::before { content: counter(step); position: absolute; left: 0; top: 2px; width: 26px; height: 26px; background: var(--blue); color: #fff; border-radius: 50%; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .card { border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; background: var(--bg); }
+  .note { background: #e8f4fd; border-left: 4px solid var(--blue); padding: 10px 14px; border-radius: 0 6px 6px 0; margin-bottom: 12px; font-size: 14px; }
+  .warn { background: #fff3f3; border-left: 4px solid var(--red); padding: 10px 14px; border-radius: 0 6px 6px 0; margin-bottom: 12px; font-size: 14px; }
+  .btn-demo { display: inline-block; background: var(--orange); color: #fff; border-radius: 8px; padding: 18px 36px; font-size: 20px; font-weight: 700; text-align: center; margin: 8px 0; }
+  .btn-demo.active { background: var(--red); }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 14px; }
+  th { background: #1e3a5f; color: #fff; padding: 8px 12px; text-align: left; }
+  td { border: 1px solid var(--border); padding: 8px 12px; }
+  tr:nth-child(even) td { background: var(--bg); }
+  .toc { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin-bottom: 32px; }
+  .toc h3 { margin-top: 0; margin-bottom: 10px; font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .toc ol { margin-bottom: 0; }
+  .toc a { color: var(--blue); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+  .big-num { font-size: 36px; font-weight: 700; color: var(--blue); display: block; }
+  .highlight { background: #fff9c4; padding: 2px 4px; border-radius: 3px; }
+  @media print {
+    .btn-demo { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div style="max-width:740px;margin:0 auto;">
+    <div style="color:#9db8d2;font-size:13px;margin-bottom:12px;">Wakaru</div>
+    <h1>学生ツール マニュアル <span class="badge">学生用</span></h1>
+    <div class="sub">授業についていけないとき、先生に知らせるツールです</div>
+  </div>
+</div>
+
+<main>
+
+  <div class="toc">
+    <h3>目次</h3>
+    <ol>
+      <li><a href="#what">このツールでできること</a></li>
+      <li><a href="#install">ダウンロードと起動</a></li>
+      <li><a href="#setup">初回設定（学生情報の入力）</a></li>
+      <li><a href="#use">授業中の使いかた</a></li>
+      <li><a href="#trouble">困ったときは</a></li>
+    </ol>
+  </div>
+
+  <!-- 1 -->
+  <h2 id="what">1. このツールでできること</h2>
+
+  <div class="card" style="text-align:center;padding:24px;">
+    <span class="big-num">1 クリック</span>
+    <p style="margin:0;color:#555;">授業についていけないことを<br>先生にリアルタイムで伝えられます</p>
+  </div>
+
+  <ul>
+    <li>手を挙げずに、静かに先生へ知らせることができます</li>
+    <li>通知は <strong>1分後に自動で解除</strong> されます（操作不要）</li>
+    <li>誰が通知したかの情報は先生のみが確認できます</li>
+  </ul>
+
+  <div class="note">
+    このツールは<strong>インストール不要</strong>です。受け取った .exe ファイルをダブルクリックするだけで起動します。
+  </div>
+
+  <!-- 2 -->
+  <h2 id="install">2. ダウンロードと起動</h2>
+
+  <ol class="step">
+    <li>
+      Teams のチャンネルに投稿された <strong>Wakaru_Student.exe</strong> をダウンロードします。
+    </li>
+    <li>
+      ダウンロードした <strong>Wakaru_Student.exe</strong> をダブルクリックして起動します。
+    </li>
+    <li>
+      「Windows によって PC が保護されました」と表示された場合は、<br>
+      「詳細情報」→「実行」をクリックしてください。
+    </li>
+  </ol>
+
+  <div class="note">
+    <strong>保存場所について</strong><br>
+    ツールを起動したフォルダに設定ファイル（student_config.json）が自動生成されます。<br>
+    同じ場所に保存しておくと、次回以降は情報入力を省略できます。
+  </div>
+
+  <!-- 3 -->
+  <h2 id="setup">3. 初回設定（学生情報の入力）</h2>
+
+  <p>起動後、「学生情報」タブで自分の情報を入力します。</p>
+
+  <ol class="step">
+    <li>
+      以下の情報を入力してください。
+      <table style="margin-top:8px;">
+        <tr><th>項目</th><th>入力内容</th></tr>
+        <tr><td>学籍番号</td><td>自分の学籍番号</td></tr>
+        <tr><td>クラス名</td><td>クラス名（例：1-A、情報科2組）</td></tr>
+        <tr><td>出席番号</td><td>出席番号</td></tr>
+        <tr><td>氏名</td><td>氏名（フルネーム）</td></tr>
+      </table>
+    </li>
+    <li>
+      「先生」のドロップダウンから、今日の授業の担当先生を選択してください。<br>
+      <span style="color:var(--muted);font-size:13px;">※ 先生リストが空の場合は、先生ツールが起動していないか、同じネットワークに接続されていない可能性があります。</span>
+    </li>
+    <li>
+      「<strong>保存して接続</strong>」ボタンをクリックします。
+    </li>
+  </ol>
+
+  <div class="note">
+    入力した情報は次回起動時に自動的に読み込まれます。<br>
+    授業ごとに「先生」の選択だけ変更すれば OK です。
+  </div>
+
+  <!-- 4 -->
+  <h2 id="use">4. 授業中の使いかた</h2>
+
+  <h3>授業についていけなくなったとき</h3>
+
+  <ol class="step">
+    <li>
+      「授業」タブに移動します。
+    </li>
+    <li>
+      オレンジ色の <span class="highlight">ついていけない</span> ボタンをクリックします。
+      <div style="margin:12px 0;">
+        <div class="btn-demo">ついていけない</div>
+      </div>
+    </li>
+    <li>
+      ボタンが赤色に変わり、先生に通知が送られます。
+      <div style="margin:12px 0;">
+        <div class="btn-demo active">通知中<br><span style="font-size:14px;font-weight:400;">(自動解除まで待ってください)</span></div>
+      </div>
+      画面に「あと XX 秒で自動解除」とカウントダウンが表示されます。
+    </li>
+    <li>
+      <strong>1分後に自動で解除</strong>されます。ボタンが元に戻ったら、再度通知できます。
+    </li>
+  </ol>
+
+  <div class="warn">
+    <strong>注意</strong><br>
+    通知中はボタンを押しても解除できません。1分待つと自動的に解除されます。
+  </div>
+
+  <h3>授業ごとに先生を変えるとき</h3>
+  <p>「学生情報」タブで先生のドロップダウンを変更し、「保存して接続」をクリックしてください。</p>
+
+  <!-- 5 -->
+  <h2 id="trouble">5. 困ったときは</h2>
+
+  <div class="card">
+    <h3>「サーバーが見つかりません」と表示される</h3>
+    <ul>
+      <li>先生がまだツールを起動していない可能性があります。先生に確認してください。</li>
+      <li>学校のWi-Fiに接続されているか確認してください。</li>
+      <li>15秒ごとに自動で再検索します。しばらく待ってください。</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>「切断されました」と表示される</h3>
+    <ul>
+      <li>自動的に再接続を試みます。しばらく待ってください。</li>
+      <li>復帰しない場合は、ツールを一度閉じて再起動してください。</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>先生リストが表示されない（ドロップダウンが空）</h3>
+    <ul>
+      <li>先生ツールが起動しているか確認してください。</li>
+      <li>「保存して接続」をもう一度クリックしてみてください。</li>
+      <li>それでも表示されない場合は、下記「手動でIPアドレスを入力する」を試してください。</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>手動でIPアドレスを入力する（最終手段）</h3>
+    <p>自動検索がうまくいかない場合は、先生に先生PCのIPアドレスを確認して手動で接続できます。</p>
+    <ol class="step">
+      <li>先生に「先生PCのIPアドレス」を聞いてください。<br>
+          <span style="color:var(--muted);font-size:13px;">先生ツールのステータスバー下部に表示されているIPアドレスです。</span></li>
+      <li>「学生情報」タブの一番下にある「先生PCのIPアドレス（自動検出できない場合）」の欄にIPアドレスを入力します。<br>
+          <span style="color:var(--muted);font-size:13px;">例: 192.168.1.10</span></li>
+      <li>「接続」ボタンをクリックしてください。</li>
+    </ol>
+    <div class="note" style="margin-top:8px;">入力したIPアドレスは保存されます。次回起動時も同じIPに自動接続します。</div>
+  </div>
+
+  <div class="card">
+    <h3>「ついていけない」ボタンが押せない（グレー）</h3>
+    <ul>
+      <li>学生情報が未入力の可能性があります。「学生情報」タブで情報を入力して「保存して接続」をクリックしてください。</li>
+      <li>サーバーに接続されているか、画面下部のステータスバーで確認してください。</li>
+    </ul>
+  </div>
+
+  <hr>
+  <p style="text-align:center;color:var(--muted);font-size:13px;">Wakaru 学生ツール マニュアル</p>
+
+</main>
+</body>
+</html>
