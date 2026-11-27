@@ -297,10 +297,10 @@ class TeacherGUI:
         bg = '#1e1e1e'
         self.root.configure(bg=bg)
 
-        # 座席マップ（枠線の色でステータスを示す）
+        # 座席マップ（背景色でステータスを示す）
         self.map_canvas = tk.Canvas(
             self.root, width=MAP_SIZE, height=MAP_SIZE,
-            bg='#1a1a2e', highlightthickness=2, highlightbackground='#27ae60'
+            bg='#27ae60', highlightthickness=0
         )
         if state.config.get('show_seat_map', True):
             self.map_canvas.pack(padx=10, pady=(10, 4))
@@ -390,11 +390,22 @@ class TeacherGUI:
         c = self.map_canvas
         s = MAP_SIZE
         c.delete('all')
+
+        exceeded = state.threshold_exceeded()
+        if exceeded:
+            bg    = '#e74c3c' if self._blink_on else '#c0392b'
+            grid  = '#a93226'
+        else:
+            bg    = '#27ae60'
+            grid  = '#1e8449'
+
+        c.create_rectangle(0, 0, s, s, fill=bg, outline='')
         for i in range(0, s + 1, s // 4):
-            c.create_line(i, 0, i, s, fill='#2a2a4e')
-            c.create_line(0, i, s, i, fill='#2a2a4e')
-        c.create_rectangle(s * 0.1, 4, s * 0.9, 16, fill='#2d5a2d', outline='#4a8a4a')
-        c.create_text(s / 2, 10, text='黒板', fill='#8aaa8a', font=('Yu Gothic UI', 7))
+            c.create_line(i, 0, i, s, fill=grid)
+            c.create_line(0, i, s, i, fill=grid)
+        # 黒板（青系で緑・赤どちらの背景にも映える）
+        c.create_rectangle(s * 0.1, 4, s * 0.9, 16, fill='#1a3a5c', outline='#2e6da4')
+        c.create_text(s / 2, 10, text='黒板', fill='#aed6f1', font=('Yu Gothic UI', 7))
 
         with state.lock:
             connected = dict(state.connected)
@@ -411,40 +422,41 @@ class TeacherGUI:
             x = int(sx * s)
             y = int(sy * s)
             r = 7
+            # 白＋濃い縁取りで緑・赤どちらの背景でも視認できる
             c.create_oval(x - r, y - r, x + r, y + r,
-                          fill='#e74c3c', outline='#ff9999', width=1)
+                          fill='#ffffff', outline='#333333', width=2)
 
     def _refresh(self):
         total = state.total()
         count = state.cant_count()
         self.period_lbl.config(text=get_current_period())
         self.count_lbl.config(text=f'接続 {total}  未理解 {count}')
-        self._draw_map()
 
         if state.threshold_exceeded():
             if self._blink_job is None:
                 self._blink_tick(total, count)
         else:
             self._stop_blink()
-            self._set_status('#27ae60')
+            self._blink_on = False
+            self.status_dot.config(fg='#27ae60')
+            self._draw_map()
 
     def _blink_tick(self, total, count):
         if not state.threshold_exceeded():
             self._stop_blink()
+            self._blink_on = False
+            self.status_dot.config(fg='#27ae60')
+            self._draw_map()
             return
         self._blink_on = not self._blink_on
-        color = '#e74c3c' if self._blink_on else '#c0392b'
-        self._set_status(color)
+        self.status_dot.config(fg='#e74c3c' if self._blink_on else '#c0392b')
+        self._draw_map()
         self._blink_job = self.root.after(500, lambda: self._blink_tick(state.total(), state.cant_count()))
 
     def _stop_blink(self):
         if self._blink_job:
             self.root.after_cancel(self._blink_job)
             self._blink_job = None
-
-    def _set_status(self, color):
-        self.map_canvas.config(highlightbackground=color)
-        self.status_dot.config(fg=color)
 
 
 class SettingsWin:

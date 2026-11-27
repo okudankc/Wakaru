@@ -142,7 +142,7 @@ class StudentApp:
             self.root,
             text=CANT_BUTTON_OPTIONS[idx],
             command=self._on_cant,
-            font=('Yu Gothic UI', 15, 'bold'),
+            font=('Segoe UI Emoji', 18),
             bg='#555', fg='#888',
             relief='flat',
             state='disabled',
@@ -250,7 +250,7 @@ class StudentApp:
         if self.connected and has_info and not self.cant_active:
             idx = cfg.get('cant_button_idx', 3)
             self.cant_btn.config(
-                state='normal', bg='#e67e22', fg='white',
+                state='normal', bg='#2d6a8e', fg='white',
                 text=CANT_BUTTON_OPTIONS[idx]
             )
         elif not self.connected or not has_info:
