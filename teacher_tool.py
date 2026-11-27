@@ -278,6 +278,9 @@ def run_udp():
 
 
 # ── GUI ───────────────────────────────────────────────────
+MAP_SIZE = 260
+
+
 class TeacherGUI:
     def __init__(self, root):
         self.root = root
@@ -323,6 +326,14 @@ class TeacherGUI:
             font=('Yu Gothic UI', 10)
         )
         self.count_lbl.pack(side=tk.LEFT, padx=(10, 0))
+
+        # 座席マップ
+        self.map_canvas = tk.Canvas(
+            self.root, width=MAP_SIZE, height=MAP_SIZE,
+            bg='#1a1a2e', highlightthickness=1, highlightbackground='#444'
+        )
+        self.map_canvas.pack(padx=12, pady=(4, 6))
+        self._draw_map()
 
         # ボタン行
         btn_row = tk.Frame(self.root, bg=bg)
@@ -373,11 +384,45 @@ class TeacherGUI:
             pass
         self.root.after(100, self._poll_queue)
 
+    def _draw_map(self):
+        c = self.map_canvas
+        s = MAP_SIZE
+        c.delete('all')
+        # グリッド
+        for i in range(0, s + 1, s // 4):
+            c.create_line(i, 0, i, s, fill='#2a2a4e')
+            c.create_line(0, i, s, i, fill='#2a2a4e')
+        # 黒板
+        c.create_rectangle(s * 0.1, 4, s * 0.9, 18, fill='#2d5a2d', outline='#4a8a4a')
+        c.create_text(s / 2, 11, text='黒板', fill='#8aaa8a', font=('Yu Gothic UI', 8))
+
+        with state.lock:
+            connected = dict(state.connected)
+            cant = set(state.cant_keep_up)
+
+        for ws_id, info in connected.items():
+            sx = info.get('seat_x', -1)
+            sy = info.get('seat_y', -1)
+            if not (0.0 <= sx <= 1.0 and 0.0 <= sy <= 1.0):
+                continue
+            x = int(sx * s)
+            y = int(sy * s)
+            sid = info.get('_sid', '')
+            if sid in cant:
+                r = 8
+                c.create_oval(x - r, y - r, x + r, y + r,
+                              fill='#e74c3c', outline='#ff9999', width=1)
+            else:
+                r = 5
+                c.create_oval(x - r, y - r, x + r, y + r,
+                              fill='#4a6a8a', outline='#6a8aaa', width=1)
+
     def _refresh(self):
         total = state.total()
         count = state.cant_count()
         self.period_lbl.config(text=get_current_period())
         self.count_lbl.config(text=f'接続: {total}人  /  未理解: {count}人')
+        self._draw_map()
 
         if state.threshold_exceeded():
             if self._blink_job is None:

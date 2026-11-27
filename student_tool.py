@@ -22,7 +22,8 @@ RECOVERY_SECONDS = 60
 
 
 def load_config():
-    default = {'student_id': '', 'class_name': '', 'attendance_no': '', 'name': '', 'teacher': '', 'manual_server_ip': ''}
+    default = {'student_id': '', 'class_name': '', 'attendance_no': '', 'name': '', 'teacher': '',
+               'seat_x': -1.0, 'seat_y': -1.0}
     if CONFIG_FILE.exists():
         try:
             with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
@@ -132,6 +133,8 @@ class StudentApp:
             font=('Yu Gothic UI', 8), relief='sunken'
         ).pack(fill=tk.X, padx=10, pady=(0, 6))
 
+    SEAT_SIZE = 180
+
     def _build_reg(self, f):
         FIELDS = [
             ('学籍番号', 'student_id'),
@@ -142,23 +145,23 @@ class StudentApp:
         self.reg_vars = {}
         for i, (label, key) in enumerate(FIELDS):
             tk.Label(f, text=label, font=('Yu Gothic UI', 10)).grid(
-                row=i, column=0, sticky='e', padx=(10, 6), pady=6
+                row=i, column=0, sticky='e', padx=(10, 6), pady=4
             )
             var = tk.StringVar(value=self.config.get(key, ''))
             self.reg_vars[key] = var
             tk.Entry(f, textvariable=var, width=20).grid(
-                row=i, column=1, sticky='w', padx=(0, 10), pady=6
+                row=i, column=1, sticky='w', padx=(0, 10), pady=4
             )
 
         tk.Label(f, text='先生', font=('Yu Gothic UI', 10)).grid(
-            row=len(FIELDS), column=0, sticky='e', padx=(10, 6), pady=6
+            row=len(FIELDS), column=0, sticky='e', padx=(10, 6), pady=4
         )
         self.teacher_var = tk.StringVar(value=self.config.get('teacher', ''))
         self.teacher_cb = ttk.Combobox(
             f, textvariable=self.teacher_var,
             values=[], width=18, state='readonly'
         )
-        self.teacher_cb.grid(row=len(FIELDS), column=1, sticky='w', padx=(0, 10), pady=6)
+        self.teacher_cb.grid(row=len(FIELDS), column=1, sticky='w', padx=(0, 10), pady=4)
 
         tk.Button(
             f, text='保存して接続',
@@ -166,28 +169,23 @@ class StudentApp:
             font=('Yu Gothic UI', 10),
             bg='#4a90d9', fg='white', relief='flat',
             padx=16, pady=6
-        ).grid(row=len(FIELDS)+1, column=0, columnspan=2, pady=12)
+        ).grid(row=len(FIELDS)+1, column=0, columnspan=2, pady=(8, 4))
 
-        # 手動IP接続（自動検出が失敗する環境向け）
-        sep = tk.Frame(f, height=1, bg='#555')
-        sep.grid(row=len(FIELDS)+2, column=0, columnspan=2, sticky='ew', padx=10, pady=(4, 6))
-
-        tk.Label(f, text='先生PCのIPアドレス\n(自動検出できない場合)',
-                 font=('Yu Gothic UI', 8), fg='#888', justify='right').grid(
-            row=len(FIELDS)+3, column=0, sticky='e', padx=(10, 6), pady=4
+        # 座席位置
+        tk.Frame(f, height=1, bg='#555').grid(
+            row=len(FIELDS)+2, column=0, columnspan=2, sticky='ew', padx=10, pady=(2, 6)
         )
-        manual_frame = tk.Frame(f)
-        manual_frame.grid(row=len(FIELDS)+3, column=1, sticky='w', padx=(0, 10), pady=4)
-        self.manual_ip_var = tk.StringVar(value=self.config.get('manual_server_ip', ''))
-        tk.Entry(manual_frame, textvariable=self.manual_ip_var, width=14,
-                 font=('Yu Gothic UI', 10)).pack(side=tk.LEFT)
-        tk.Button(
-            manual_frame, text='接続',
-            command=self._manual_connect,
-            font=('Yu Gothic UI', 9),
-            bg='#555', fg='white', relief='flat',
-            padx=8, pady=2
-        ).pack(side=tk.LEFT, padx=(4, 0))
+        tk.Label(f, text='自席の位置をクリック', font=('Yu Gothic UI', 9), fg='#aaa').grid(
+            row=len(FIELDS)+3, column=0, columnspan=2
+        )
+        self.seat_canvas = tk.Canvas(
+            f, width=self.SEAT_SIZE, height=self.SEAT_SIZE,
+            bg='#1a1a2e', cursor='crosshair',
+            highlightthickness=1, highlightbackground='#555'
+        )
+        self.seat_canvas.grid(row=len(FIELDS)+4, column=0, columnspan=2, pady=(4, 10))
+        self._draw_seat_grid()
+        self.seat_canvas.bind('<Button-1>', self._on_seat_click)
 
     def _build_main(self, f):
         self.info_lbl = tk.Label(
@@ -209,6 +207,32 @@ class StudentApp:
         self.timer_lbl = tk.Label(f, text='', font=('Yu Gothic UI', 10), fg='#888')
         self.timer_lbl.pack()
 
+    def _draw_seat_grid(self):
+        c = self.seat_canvas
+        s = self.SEAT_SIZE
+        c.delete('all')
+        for i in range(0, s + 1, s // 4):
+            c.create_line(i, 0, i, s, fill='#2a2a4e')
+            c.create_line(0, i, s, i, fill='#2a2a4e')
+        c.create_rectangle(s * 0.1, 3, s * 0.9, 14, fill='#2d5a2d', outline='#4a8a4a')
+        c.create_text(s / 2, 9, text='黒板', fill='#8a8', font=('Yu Gothic UI', 7))
+        sx = self.config.get('seat_x', -1)
+        sy = self.config.get('seat_y', -1)
+        if 0.0 <= sx <= 1.0 and 0.0 <= sy <= 1.0:
+            self._place_dot(int(sx * s), int(sy * s))
+
+    def _place_dot(self, x, y):
+        r = 7
+        self.seat_canvas.create_oval(x - r, y - r, x + r, y + r,
+                                     fill='#4a90d9', outline='#ffffff', width=1, tags='dot')
+
+    def _on_seat_click(self, event):
+        s = self.SEAT_SIZE
+        self.seat_canvas.delete('dot')
+        self._place_dot(event.x, event.y)
+        self.config['seat_x'] = round(event.x / s, 4)
+        self.config['seat_y'] = round(event.y / s, 4)
+
     # ── Discovery / Connection ────────────────────────────
     def _auto_discover(self):
         self._set_status('サーバーを検索中...')
@@ -221,30 +245,10 @@ class StudentApp:
                 self.gui_queue.put(('status', f'サーバー発見: {ip}'))
                 asyncio.run_coroutine_threadsafe(self._connect(), self.loop)
             else:
-                manual_ip = self.config.get('manual_server_ip', '').strip()
-                if manual_ip:
-                    self.server_ip = manual_ip
-                    self.server_port = 8765
-                    self.gui_queue.put(('status', f'手動IPで接続試行: {manual_ip}'))
-                    asyncio.run_coroutine_threadsafe(self._connect(), self.loop)
-                else:
-                    self.gui_queue.put(('status', 'サーバーが見つかりません。先生ツールが起動しているか確認してください。'))
-                    # retry after 15s
-                    self.root.after(15000, self._auto_discover)
+                self.gui_queue.put(('status', 'サーバーが見つかりません。先生ツールが起動しているか確認してください。'))
+                self.root.after(15000, self._auto_discover)
 
         threading.Thread(target=task, daemon=True).start()
-
-    def _manual_connect(self):
-        ip = self.manual_ip_var.get().strip()
-        if not ip:
-            messagebox.showwarning('入力エラー', 'IPアドレスを入力してください。')
-            return
-        self.config['manual_server_ip'] = ip
-        save_config(self.config)
-        self.server_ip = ip
-        self.server_port = 8765
-        self._set_status(f'手動IPで接続試行: {ip}')
-        asyncio.run_coroutine_threadsafe(self._connect(), self.loop)
 
     async def _connect(self):
         uri = f'ws://{self.server_ip}:{self.server_port}'
@@ -263,6 +267,8 @@ class StudentApp:
                         'attendance_no': cfg['attendance_no'],
                         'name': cfg['name'],
                         'teacher': cfg['teacher'],
+                        'seat_x': cfg.get('seat_x', -1),
+                        'seat_y': cfg.get('seat_y', -1),
                     }))
 
                 async for raw in ws:
@@ -369,6 +375,8 @@ class StudentApp:
                 'attendance_no': self.config['attendance_no'],
                 'name': self.config['name'],
                 'teacher': self.config['teacher'],
+                'seat_x': self.config.get('seat_x', -1),
+                'seat_y': self.config.get('seat_y', -1),
             })
 
         self._refresh_btn()
