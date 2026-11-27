@@ -137,6 +137,7 @@ def load_config():
         'threshold_type': 'percentage',
         'threshold_value': 30,
         'always_on_top': True,
+        'show_seat_map': True,
     }
     if CONFIG_FILE.exists():
         try:
@@ -278,7 +279,7 @@ def run_udp():
 
 
 # ── GUI ───────────────────────────────────────────────────
-MAP_SIZE = 260
+MAP_SIZE = 170
 
 
 class TeacherGUI:
@@ -296,66 +297,61 @@ class TeacherGUI:
         bg = '#1e1e1e'
         self.root.configure(bg=bg)
 
-        # ステータスボックス
-        self.status_box = tk.Frame(self.root, bg='#27ae60', width=320, height=90)
-        self.status_box.pack(padx=12, pady=(12, 6))
-        self.status_box.pack_propagate(False)
-
-        self.status_lbl = tk.Label(
-            self.status_box, text='● 授業中 - 全員理解中',
-            bg='#27ae60', fg='white',
-            font=('Yu Gothic UI', 13, 'bold')
-        )
-        self.status_lbl.place(relx=0.5, rely=0.5, anchor='center')
-
-        # 時限 + カウント行
-        info_row = tk.Frame(self.root, bg=bg)
-        info_row.pack(fill=tk.X, padx=12, pady=(0, 4))
-
-        self.period_lbl = tk.Label(
-            info_row, text=get_current_period(),
-            bg='#333', fg='#f0c040',
-            font=('Yu Gothic UI', 10, 'bold'),
-            padx=8, pady=2, relief='flat'
-        )
-        self.period_lbl.pack(side=tk.LEFT)
-
-        self.count_lbl = tk.Label(
-            info_row, text='接続: 0人  /  未理解: 0人',
-            bg=bg, fg='#aaaaaa',
-            font=('Yu Gothic UI', 10)
-        )
-        self.count_lbl.pack(side=tk.LEFT, padx=(10, 0))
-
-        # 座席マップ
+        # 座席マップ（枠線の色でステータスを示す）
         self.map_canvas = tk.Canvas(
             self.root, width=MAP_SIZE, height=MAP_SIZE,
-            bg='#1a1a2e', highlightthickness=1, highlightbackground='#444'
+            bg='#1a1a2e', highlightthickness=2, highlightbackground='#27ae60'
         )
-        self.map_canvas.pack(padx=12, pady=(4, 6))
+        if state.config.get('show_seat_map', True):
+            self.map_canvas.pack(padx=10, pady=(10, 4))
         self._draw_map()
+
+        # 情報行
+        self._info_row = tk.Frame(self.root, bg=bg)
+        self._info_row.pack(fill=tk.X, padx=10, pady=(4, 2))
+
+        self.status_dot = tk.Label(
+            self._info_row, text='●', fg='#27ae60', bg=bg,
+            font=('Yu Gothic UI', 10)
+        )
+        self.status_dot.pack(side=tk.LEFT)
+
+        self.period_lbl = tk.Label(
+            self._info_row, text=get_current_period(),
+            bg='#333', fg='#f0c040',
+            font=('Yu Gothic UI', 9, 'bold'),
+            padx=6, pady=1
+        )
+        self.period_lbl.pack(side=tk.LEFT, padx=(4, 0))
+
+        self.count_lbl = tk.Label(
+            self._info_row, text='接続 0  未理解 0',
+            bg=bg, fg='#aaaaaa',
+            font=('Yu Gothic UI', 9)
+        )
+        self.count_lbl.pack(side=tk.LEFT, padx=(8, 0))
 
         # ボタン行
         btn_row = tk.Frame(self.root, bg=bg)
-        btn_row.pack(padx=12, pady=(0, 12), fill=tk.X)
+        btn_row.pack(padx=10, pady=(2, 10), fill=tk.X)
 
         tk.Button(
             btn_row, text='⚙ 設定',
             command=self._open_settings,
             bg='#444', fg='white', relief='flat',
-            font=('Yu Gothic UI', 9), padx=10, pady=4
+            font=('Yu Gothic UI', 9), padx=8, pady=3
         ).pack(side=tk.LEFT)
 
         tk.Button(
             btn_row, text='📋 ログ',
             command=self._open_log,
             bg='#444', fg='white', relief='flat',
-            font=('Yu Gothic UI', 9), padx=10, pady=4
-        ).pack(side=tk.LEFT, padx=(6, 0))
+            font=('Yu Gothic UI', 9), padx=8, pady=3
+        ).pack(side=tk.LEFT, padx=(4, 0))
 
         self.top_var = tk.BooleanVar(value=state.config['always_on_top'])
         tk.Checkbutton(
-            btn_row, text='最前面に表示',
+            btn_row, text='最前面',
             variable=self.top_var,
             command=self._toggle_top,
             bg=bg, fg='#cccccc', selectcolor=bg,
@@ -369,8 +365,14 @@ class TeacherGUI:
         state.config['always_on_top'] = v
         save_config(state.config)
 
+    def toggle_map(self, visible):
+        if visible:
+            self.map_canvas.pack(before=self._info_row, padx=10, pady=(10, 4))
+        else:
+            self.map_canvas.pack_forget()
+
     def _open_settings(self):
-        SettingsWin(self.root)
+        SettingsWin(self.root, on_map_toggle=self.toggle_map)
 
     def _open_log(self):
         LogViewer(self.root)
@@ -388,52 +390,43 @@ class TeacherGUI:
         c = self.map_canvas
         s = MAP_SIZE
         c.delete('all')
-        # グリッド
         for i in range(0, s + 1, s // 4):
             c.create_line(i, 0, i, s, fill='#2a2a4e')
             c.create_line(0, i, s, i, fill='#2a2a4e')
-        # 黒板
-        c.create_rectangle(s * 0.1, 4, s * 0.9, 18, fill='#2d5a2d', outline='#4a8a4a')
-        c.create_text(s / 2, 11, text='黒板', fill='#8aaa8a', font=('Yu Gothic UI', 8))
+        c.create_rectangle(s * 0.1, 4, s * 0.9, 16, fill='#2d5a2d', outline='#4a8a4a')
+        c.create_text(s / 2, 10, text='黒板', fill='#8aaa8a', font=('Yu Gothic UI', 7))
 
         with state.lock:
             connected = dict(state.connected)
             cant = set(state.cant_keep_up)
 
         for ws_id, info in connected.items():
+            sid = info.get('_sid', '')
+            if sid not in cant:
+                continue
             sx = info.get('seat_x', -1)
             sy = info.get('seat_y', -1)
             if not (0.0 <= sx <= 1.0 and 0.0 <= sy <= 1.0):
                 continue
             x = int(sx * s)
             y = int(sy * s)
-            sid = info.get('_sid', '')
-            if sid in cant:
-                r = 8
-                c.create_oval(x - r, y - r, x + r, y + r,
-                              fill='#e74c3c', outline='#ff9999', width=1)
-            else:
-                r = 5
-                c.create_oval(x - r, y - r, x + r, y + r,
-                              fill='#4a6a8a', outline='#6a8aaa', width=1)
+            r = 7
+            c.create_oval(x - r, y - r, x + r, y + r,
+                          fill='#e74c3c', outline='#ff9999', width=1)
 
     def _refresh(self):
         total = state.total()
         count = state.cant_count()
         self.period_lbl.config(text=get_current_period())
-        self.count_lbl.config(text=f'接続: {total}人  /  未理解: {count}人')
+        self.count_lbl.config(text=f'接続 {total}  未理解 {count}')
         self._draw_map()
 
         if state.threshold_exceeded():
             if self._blink_job is None:
-                self._start_blink(total, count)
+                self._blink_tick(total, count)
         else:
             self._stop_blink()
-            msg = '● 授業中 - 全員理解中' if count == 0 else f'● 授業中  {count}人が未理解'
-            self._set_color('#27ae60', msg)
-
-    def _start_blink(self, total, count):
-        self._blink_tick(total, count)
+            self._set_status('#27ae60')
 
     def _blink_tick(self, total, count):
         if not state.threshold_exceeded():
@@ -441,7 +434,7 @@ class TeacherGUI:
             return
         self._blink_on = not self._blink_on
         color = '#e74c3c' if self._blink_on else '#c0392b'
-        self._set_color(color, f'⚠ 警告!  {count}/{total}人が理解できていません')
+        self._set_status(color)
         self._blink_job = self.root.after(500, lambda: self._blink_tick(state.total(), state.cant_count()))
 
     def _stop_blink(self):
@@ -449,13 +442,14 @@ class TeacherGUI:
             self.root.after_cancel(self._blink_job)
             self._blink_job = None
 
-    def _set_color(self, color, text):
-        self.status_box.config(bg=color)
-        self.status_lbl.config(bg=color, text=text)
+    def _set_status(self, color):
+        self.map_canvas.config(highlightbackground=color)
+        self.status_dot.config(fg=color)
 
 
 class SettingsWin:
-    def __init__(self, parent):
+    def __init__(self, parent, on_map_toggle=None):
+        self._on_map_toggle = on_map_toggle
         win = tk.Toplevel(parent)
         win.title('設定')
         win.resizable(False, False)
@@ -532,10 +526,19 @@ class SettingsWin:
         tk.Spinbox(vf, from_=1, to=200, textvariable=self.th_val, width=6).pack(side=tk.LEFT, padx=6)
         tk.Label(vf, text='%(または 人)').pack(side=tk.LEFT)
 
+        tk.Frame(f, height=1, bg='#ccc').pack(fill=tk.X, padx=10, pady=(8, 6))
+        self.show_map_var = tk.BooleanVar(value=state.config.get('show_seat_map', True))
+        tk.Checkbutton(f, text='座席マップを表示',
+                       variable=self.show_map_var).pack(anchor='w', padx=10, pady=(0, 10))
+
     def _save(self):
+        old_map = state.config.get('show_seat_map', True)
         state.config['threshold_type'] = self.th_type.get()
         state.config['threshold_value'] = self.th_val.get()
+        state.config['show_seat_map'] = self.show_map_var.get()
         save_config(state.config)
+        if self._on_map_toggle and old_map != state.config['show_seat_map']:
+            self._on_map_toggle(state.config['show_seat_map'])
         self.win.destroy()
 
 
