@@ -260,16 +260,20 @@ class StudentApp:
     # ── Can't keep up ─────────────────────────────────────
     def _on_cant(self):
         if self.cant_active:
+            if self._countdown_job:
+                self.root.after_cancel(self._countdown_job)
+                self._countdown_job = None
+            self._recover()
             return
         self.cant_active = True
-        self.cant_btn.config(state='disabled', bg='#e74c3c', fg='white', text='📡\n通知中')
+        self.cant_btn.config(state='normal', bg='#e74c3c', fg='white', text='📡\n通知中')
         self._send({'type': 'cant_keep_up'})
         self.remaining = RECOVERY_SECONDS
         self._tick()
 
     def _tick(self):
         if self.remaining > 0:
-            self.timer_lbl.config(text=f'あと {self.remaining}秒で解除')
+            self.timer_lbl.config(text=f'あと {self.remaining}秒  (もう一度押すと解除)')
             self.remaining -= 1
             self._countdown_job = self.root.after(1000, self._tick)
         else:
