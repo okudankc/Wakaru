@@ -119,40 +119,44 @@
   <!-- 3 -->
   <h2 id="screen">3. メイン画面の見かた</h2>
 
-  <div style="text-align:center;">
-    <div class="screen">
-      <div class="s-box">● 授業中 - 全員理解中</div>
-      <div class="s-info">1・2限　　接続: 32人 / 未理解: 0人</div>
-      <div>
-        <span class="s-btn">⚙ 設定</span>
-        <span class="s-btn">📋 ログ</span>
-        <span style="color:#ccc;font-size:12px;">☑ 最前面に表示</span>
-      </div>
-    </div>
-  </div>
+  <p>コンパクトな小窓で表示されます。「最前面」チェックをオンにすると PowerPoint スライドショー中でも手前に表示されます。</p>
 
-  <table style="margin-top:16px;">
-    <tr><th>表示</th><th>意味</th></tr>
+  <h3>座席マップ（メインビジュアル）</h3>
+
+  <table>
+    <tr><th>背景色</th><th>意味</th></tr>
     <tr>
-      <td><span class="status-green">● 授業中 - 全員理解中</span></td>
-      <td>理解できていない学生が閾値未満。正常状態。</td>
+      <td><span class="status-green" style="padding:4px 12px;">緑</span></td>
+      <td>正常。閾値未満。</td>
     </tr>
     <tr>
-      <td><span class="status-red">⚠ 警告! X/Y人が理解できていません</span>（点滅）</td>
-      <td>閾値を超えた。授業ペースの調整を検討してください。</td>
-    </tr>
-    <tr>
-      <td>時限表示（例: <strong>1・2限</strong>）</td>
-      <td>現在の時限を自動判定。授業時間外は「時間外」と表示。</td>
-    </tr>
-    <tr>
-      <td>接続: X人 / 未理解: Y人</td>
-      <td>現在の接続学生数と「ついていけない」通知をしている学生数。</td>
+      <td><span class="status-red" style="padding:4px 12px;">赤（点滅）</span></td>
+      <td>閾値超過。授業ペースの調整を検討してください。</td>
     </tr>
   </table>
 
-  <h3>最前面表示</h3>
-  <p>「最前面に表示」チェックをオンにすると、他のウィンドウの手前に常に表示されます。PowerPoint スライドショー中でも確認できます。</p>
+  <p>「ついていけない」ボタンを押した学生の座席位置が<strong>白い丸</strong>でマップ上に表示されます。解除されると消えます。</p>
+
+  <div class="note">
+    座席位置は学生が事前に⚙設定で登録します。未登録の学生はマップに表示されませんが、カウントには含まれます。
+  </div>
+
+  <h3>情報バー</h3>
+  <table>
+    <tr><th>表示</th><th>意味</th></tr>
+    <tr>
+      <td>● （緑/赤）</td>
+      <td>現在のステータス（マップ非表示時でも確認できます）</td>
+    </tr>
+    <tr>
+      <td>時限（例: <strong>1・2限</strong>）</td>
+      <td>現在の時限を自動判定。授業時間外は「時間外」と表示。</td>
+    </tr>
+    <tr>
+      <td>接続 X　未理解 Y</td>
+      <td>接続学生数と通知中の学生数。</td>
+    </tr>
+  </table>
 
   <!-- 4 -->
   <h2 id="settings">4. 設定</h2>
@@ -181,6 +185,7 @@
         <td>5 → 5人以上で警告</td>
       </tr>
     </table>
+    <p style="margin-top:8px;">「<strong>座席マップを表示</strong>」チェックを外すと座席マップを非表示にしてウィンドウをさらにコンパクトにできます。ステータスは ● インジケーターで引き続き確認できます。</p>
   </div>
 
   <!-- 5 -->
@@ -224,8 +229,9 @@
     <h3>学生が接続できない</h3>
     <ul>
       <li>管理ツールが起動しているか確認してください</li>
-      <li>先生PCと学生PCが<strong>同じネットワーク（同一セグメント）</strong>に接続されているか確認してください</li>
+      <li>先生PCと学生PCが<strong>同じネットワーク</strong>に接続されているか確認してください</li>
       <li>ファイアウォール設定が完了しているか確認してください（初回起動時に「はい」を選んだか）</li>
+      <li>WiFiアクセスポイントのクライアント分離（AP Isolation）はブロードキャストをブロックしますが、学生ツールはユニキャストスキャンで自動的に回避します。接続できない場合はしばらく待ってください（最大5秒）。</li>
     </ul>
   </div>
 
