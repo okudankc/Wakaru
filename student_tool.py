@@ -35,6 +35,7 @@ def load_config():
         'seat_x': -1.0, 'seat_y': -1.0,
         'cant_button_idx': 3,
         'always_on_top': False,
+        'server_ip_manual': '',
     }
     if CONFIG_FILE.exists():
         try:
@@ -122,8 +123,22 @@ class StudentApp:
         self.root.configure(bg=bg)
 
         # ヘッダー行
-        header = tk.Frame(self.root, bg=bg)
+        header = tk.Frame(self.root, bg=bg, cursor='fleur')
         header.pack(fill=tk.X, padx=5, pady=(5, 0))
+
+        # ヘッダーをドラッグして移動できるようにする
+        self._drag_x = 0
+        self._drag_y = 0
+
+        def _drag_start(e):
+            self._drag_x = e.x_root - self.root.winfo_x()
+            self._drag_y = e.y_root - self.root.winfo_y()
+
+        def _drag_move(e):
+            self.root.geometry(f'+{e.x_root - self._drag_x}+{e.y_root - self._drag_y}')
+
+        header.bind('<ButtonPress-1>', _drag_start)
+        header.bind('<B1-Motion>', _drag_move)
 
         tk.Button(
             header, text='⚙',
@@ -168,6 +183,13 @@ class StudentApp:
 
     # ── Discovery / Connection ────────────────────────────
     def _auto_discover(self):
+        manual_ip = self.config.get('server_ip_manual', '').strip()
+        if manual_ip:
+            self.server_ip = manual_ip
+            self._set_status(f'接続中: {manual_ip}')
+            asyncio.run_coroutine_threadsafe(self._connect(), self.loop)
+            return
+
         self._set_status('検索中...')
 
         def task():
@@ -352,20 +374,30 @@ class SetupDialog:
                 row=i, column=1, sticky='w', padx=(0, 10), pady=5
             )
 
-        tk.Label(f, text='先生', font=('Yu Gothic UI', 10)).grid(
+        tk.Label(f, text='先生サーバーIP\n(空=自動検出)', font=('Yu Gothic UI', 9),
+                 justify='right').grid(
             row=len(FIELDS), column=0, sticky='e', padx=(10, 6), pady=5
+        )
+        self.server_ip_var = tk.StringVar(value=cfg.get('server_ip_manual', ''))
+        tk.Entry(f, textvariable=self.server_ip_var, width=20,
+                 font=('Consolas', 10)).grid(
+            row=len(FIELDS), column=1, sticky='w', padx=(0, 10), pady=5
+        )
+
+        tk.Label(f, text='先生', font=('Yu Gothic UI', 10)).grid(
+            row=len(FIELDS) + 1, column=0, sticky='e', padx=(10, 6), pady=5
         )
         self.teacher_var = tk.StringVar(value=cfg.get('teacher', ''))
         self.teacher_cb = ttk.Combobox(
             f, textvariable=self.teacher_var,
             values=self.app.teachers, width=18, state='readonly'
         )
-        self.teacher_cb.grid(row=len(FIELDS), column=1, sticky='w', padx=(0, 10), pady=5)
+        self.teacher_cb.grid(row=len(FIELDS) + 1, column=1, sticky='w', padx=(0, 10), pady=5)
 
         self.top_var = tk.BooleanVar(value=cfg.get('always_on_top', False))
         tk.Checkbutton(f, text='常に最前面に表示',
                        variable=self.top_var).grid(
-            row=len(FIELDS)+1, column=0, columnspan=2, pady=(10, 6)
+            row=len(FIELDS) + 2, column=0, columnspan=2, pady=(10, 6)
         )
 
     def _build_seat(self, f):
@@ -427,6 +459,7 @@ class SetupDialog:
         cfg['teacher'] = self.teacher_var.get()
         cfg['always_on_top'] = self.top_var.get()
         cfg['cant_button_idx'] = self.btn_idx_var.get()
+        cfg['server_ip_manual'] = self.server_ip_var.get().strip()
         save_config(cfg)
 
         self.app.root.attributes('-topmost', cfg['always_on_top'])
